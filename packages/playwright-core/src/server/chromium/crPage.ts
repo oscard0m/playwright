@@ -339,9 +339,9 @@ export class CRPage implements PageDelegate {
     await this._mainFrameSession._client.send('Page.enable').catch(e => {});
   }
 
-  async resetForReuse(): Promise<void> {
+  async resetForReuse(progress: Progress): Promise<void> {
     // See https://github.com/microsoft/playwright/issues/22432.
-    await this.rawMouse.move(-1, -1, 'none', new Set(), new Set(), true);
+    await this.rawMouse.move(progress, -1, -1, 'none', new Set(), new Set(), true);
   }
 
   async pdf(options: channels.PagePdfParams): Promise<Buffer> {
@@ -894,7 +894,7 @@ class FrameSession {
 
   async _createVideoRecorder(screencastId: string, options: types.PageScreencastOptions): Promise<void> {
     assert(!this._screencastId);
-    const ffmpegPath = registry.findExecutable('ffmpeg')!.executablePathOrDie(this._page.attribution.playwright.options.sdkLanguage);
+    const ffmpegPath = registry.findExecutable('ffmpeg')!.executablePathOrDie(this._page.browserContext._browser.sdkLanguage());
     this._videoRecorder = await VideoRecorder.launch(this._crPage._page, ffmpegPath, options);
     this._screencastId = screencastId;
   }
