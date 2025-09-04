@@ -16,7 +16,7 @@
 
 import { program, ProgramOption } from 'playwright-core/lib/utilsBundle';
 import * as mcpServer from './sdk/server';
-import { commaSeparatedList, resolveCLIConfig, semicolonSeparatedList } from './browser/config';
+import { commaSeparatedList, dotenvFileLoader, headerParser, resolveCLIConfig, semicolonSeparatedList } from './browser/config';
 import { Context } from './browser/context';
 import { contextFactory } from './browser/browserContextFactory';
 import { ProxyBackend } from './sdk/proxyBackend';
@@ -36,6 +36,7 @@ program
     .option('--browser <browser>', 'browser or chrome channel to use, possible values: chrome, firefox, webkit, msedge.')
     .option('--caps <caps>', 'comma-separated list of additional capabilities to enable, possible values: vision, pdf.', commaSeparatedList)
     .option('--cdp-endpoint <endpoint>', 'CDP endpoint to connect to.')
+    .option('--cdp-header <headers...>', 'CDP headers to send with the connect request, multiple can be specified.', headerParser)
     .option('--config <path>', 'path to the configuration file.')
     .option('--device <device>', 'device to emulate, for example: "iPhone 15"')
     .option('--executable-path <path>', 'path to the browser executable.')
@@ -52,6 +53,7 @@ program
     .option('--proxy-server <proxy>', 'specify proxy server, for example "http://myproxy:3128" or "socks5://myproxy:8080"')
     .option('--save-session', 'Whether to save the Playwright MCP session into the output directory.')
     .option('--save-trace', 'Whether to save the Playwright Trace of the session into the output directory.')
+    .option('--secrets <path>', 'path to a file containing secrets in the dotenv format', dotenvFileLoader)
     .option('--storage-state <path>', 'path to the storage state file for isolated sessions.')
     .option('--user-agent <ua string>', 'specify user agent string')
     .option('--user-data-dir <path>', 'path to the user data directory. If not specified, a temporary directory will be created.')

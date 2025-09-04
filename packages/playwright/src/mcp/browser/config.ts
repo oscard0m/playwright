@@ -18,6 +18,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { devices } from 'playwright-core';
+import { dotenv } from 'playwright-core/lib/utilsBundle';
 
 import type * as playwright from '../../../types/test';
 import type { Config, ToolCapability } from '../config';
@@ -29,6 +30,7 @@ export type CLIOptions = {
   browser?: string;
   caps?: string[];
   cdpEndpoint?: string;
+  cdpHeader?: Record<string, string>;
   config?: string;
   device?: string;
   executablePath?: string;
@@ -44,6 +46,7 @@ export type CLIOptions = {
   proxyServer?: string;
   saveSession?: boolean;
   saveTrace?: boolean;
+  secrets?: Record<string, string>;
   storageState?: string;
   userAgent?: string;
   userDataDir?: string;
@@ -177,6 +180,7 @@ export function configFromCLIOptions(cliOptions: CLIOptions): Config {
       launchOptions,
       contextOptions,
       cdpEndpoint: cliOptions.cdpEndpoint,
+      cdpHeaders: cliOptions.cdpHeader,
     },
     server: {
       port: cliOptions.port,
@@ -189,6 +193,7 @@ export function configFromCLIOptions(cliOptions: CLIOptions): Config {
     },
     saveSession: cliOptions.saveSession,
     saveTrace: cliOptions.saveTrace,
+    secrets: cliOptions.secrets,
     outputDir: cliOptions.outputDir,
     imageResponses: cliOptions.imageResponses,
   };
@@ -204,6 +209,7 @@ function configFromEnv(): Config {
   options.browser = envToString(process.env.PLAYWRIGHT_MCP_BROWSER);
   options.caps = commaSeparatedList(process.env.PLAYWRIGHT_MCP_CAPS);
   options.cdpEndpoint = envToString(process.env.PLAYWRIGHT_MCP_CDP_ENDPOINT);
+  options.cdpHeader = headerParser(process.env.PLAYWRIGHT_MCP_CDP_HEADERS, {});
   options.config = envToString(process.env.PLAYWRIGHT_MCP_CONFIG);
   options.device = envToString(process.env.PLAYWRIGHT_MCP_DEVICE);
   options.executablePath = envToString(process.env.PLAYWRIGHT_MCP_EXECUTABLE_PATH);
@@ -219,6 +225,7 @@ function configFromEnv(): Config {
   options.proxyBypass = envToString(process.env.PLAYWRIGHT_MCP_PROXY_BYPASS);
   options.proxyServer = envToString(process.env.PLAYWRIGHT_MCP_PROXY_SERVER);
   options.saveTrace = envToBoolean(process.env.PLAYWRIGHT_MCP_SAVE_TRACE);
+  options.secrets = dotenvFileLoader(process.env.PLAYWRIGHT_MCP_SECRETS_FILE);
   options.storageState = envToString(process.env.PLAYWRIGHT_MCP_STORAGE_STATE);
   options.userAgent = envToString(process.env.PLAYWRIGHT_MCP_USER_AGENT);
   options.userDataDir = envToString(process.env.PLAYWRIGHT_MCP_USER_DATA_DIR);
@@ -298,6 +305,21 @@ export function commaSeparatedList(value: string | undefined): string[] | undefi
   if (!value)
     return undefined;
   return value.split(',').map(v => v.trim());
+}
+
+export function dotenvFileLoader(value: string | undefined): Record<string, string> | undefined {
+  if (!value)
+    return undefined;
+  return dotenv.parse(fs.readFileSync(value, 'utf8'));
+}
+
+export function headerParser(arg: string | undefined, previous?: Record<string, string>): Record<string, string> {
+  if (!arg)
+    return previous || {};
+  const result: Record<string, string> = previous || {};
+  const [name, value] = arg.split(':').map(v => v.trim());
+  result[name] = value;
+  return result;
 }
 
 function envToNumber(value: string | undefined): number | undefined {

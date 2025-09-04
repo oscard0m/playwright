@@ -60,6 +60,11 @@ export type Config = {
     cdpEndpoint?: string;
 
     /**
+     * CDP headers to send with the connect request.
+     */
+    cdpHeaders?: Record<string, string>;
+
+    /**
      * Remote endpoint to connect to an existing Playwright server.
      */
     remoteEndpoint?: string;
@@ -94,6 +99,13 @@ export type Config = {
    * Whether to save the Playwright trace of the session into the output directory.
    */
   saveTrace?: boolean;
+
+  /**
+   * Secrets are used to prevent LLM from getting sensitive data while
+   * automating scenarios such as authentication.
+   * Prefer the browser.contextOptions.storageState over secrets file as a more secure alternative.
+   */
+  secrets?: Record<string, string>;
 
   /**
    * The directory to save output files.
